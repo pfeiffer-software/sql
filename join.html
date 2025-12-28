@@ -371,6 +371,16 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
     if(hasAny) resultRows.push(makeEmptyResultRow());
   }
 
+  function refreshAll(){
+  ensureOneEmptyRowAtEnd();
+  recomputeUsedFromResult();
+
+  renderTable(leftTable, `Links (${fileL})`, left.headers, left.rows, setLeftSelection);
+  renderTable(rightTable, `Rechts (${fileR})`, right.headers, right.rows, setRightSelection);
+  renderResult();
+}
+
+
   function renderResult(){
     resultTable.innerHTML = "";
     const cap = document.createElement("caption");
@@ -405,26 +415,14 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
         e.preventDefault();
         // mark active row briefly
         resultTable.querySelectorAll("tbody tr.active").forEach(x => x.classList.remove("active"));
-        tr.classList.add("active");
 
-        // Wenn nichts ausgewählt ist: Ergebniszeile löschen (Fehlerkorrektur)
         if(!selected){
           const isLastRow = (idx === resultRows.length - 1);
-
-          // Letzte (leere) Eingabezeile nicht löschen – stattdessen nur "active" entfernen
           if(!isLastRow){
             resultRows.splice(idx, 1);
           }
-
-          ensureOneEmptyRowAtEnd();
-          recomputeUsedFromResult();
-
-          renderTable(leftTable, `Links (${fileL})`, left.headers, left.rows, setLeftSelection);
-          renderTable(rightTable, `Rechts (${fileR})`, right.headers, right.rows, setRightSelection);
-
-          renderResult();
+          refreshAll();
           return;
-
         }
 
 
@@ -442,16 +440,8 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
 
         // Nach dem Einfügen: Auswahl aufheben
         selected = null;
-        clearAllSelections();
-        renderTable(leftTable, `Links (${fileL})`, left.headers, left.rows, setLeftSelection);
-        renderTable(rightTable, `Rechts (${fileR})`, right.headers, right.rows, setRightSelection);
+        refreshAll();
 
-
-
-
-        ensureOneEmptyRowAtEnd();
-        recomputeUsedFromResult();
-        renderResult();
       }, {passive:false});
 
       tbody.appendChild(tr);
@@ -513,8 +503,9 @@ function recomputeUsedFromResult(){
       renderTable(rightTable, `Rechts (${fileR})`, right.headers, right.rows, setRightSelection);
 
 
-      leftIdCol = left.headers[0];
-      rightIdCol = right.headers[0];
+      leftIdCol = left.headers.find(h => /_id$/i.test(h)) ?? left.headers[0];
+      rightIdCol = right.headers.find(h => /_id$/i.test(h)) ?? right.headers[0];
+
 
 
       // start with one empty row
