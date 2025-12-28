@@ -313,6 +313,9 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
   let right = null;  // {headers, rows}
   let leftIdCol = null;
   let rightIdCol = null;
+  let leftMap = null;
+  let rightMap = null;
+
 
 
   let selected = null; // { side: "L"|"R", idx: number } oder null
@@ -428,13 +431,14 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
         // Paste selected left/right into this result row
         const rowObj = resultRows[idx];
 
-        if(selected && selected.side === "L"){
+       if(selected.side === "L"){
           const src = left.rows[selected.idx];
-          left.headers.forEach(h => rowObj[h] = src[h] ?? "");
-        } else if(selected && selected.side === "R"){
+          left.headers.forEach(h => rowObj[leftMap[h]] = src[h] ?? "");
+        } else if(selected.side === "R"){
           const src = right.rows[selected.idx];
-          right.headers.forEach(h => rowObj[h] = src[h] ?? "");
+          right.headers.forEach(h => rowObj[rightMap[h]] = src[h] ?? "");
         }
+
 
         // Nach dem Einfügen: Auswahl aufheben
         selected = null;
@@ -464,8 +468,9 @@ function recomputeUsedFromResult(){
   for(let i = 0; i < upto; i++){
     const row = resultRows[i];
 
-    const lId = (row[leftIdCol] ?? "").trim();
-    const rId = (row[rightIdCol] ?? "").trim();
+    const lId = (row[leftMap[leftIdCol]] ?? "").trim();
+    const rId = (row[rightMap[rightIdCol]] ?? "").trim();
+
 
     if(lId !== "" && lId !== "NULL") usedLeftIds.add(lId);
     if(rId !== "" && rId !== "NULL") usedRightIds.add(rId);
@@ -494,12 +499,19 @@ function recomputeUsedFromResult(){
     try{
       [left, right] = await Promise.all([loadCSV(fileL), loadCSV(fileR)]);
 
+      leftMap = Object.fromEntries(left.headers.map(h => [h, `L_${h}`]));
+      rightMap = Object.fromEntries(right.headers.map(h => [h, `R_${h}`]));
+
+      resultHeaders = [
+        ...left.headers.map(h => leftMap[h]),
+        ...right.headers.map(h => rightMap[h])
+      ];
+
+
       // Render source tables
       renderTable(leftTable, `Links (${fileL})`, left.headers, left.rows, setLeftSelection);
       renderTable(rightTable, `Rechts (${fileR})`, right.headers, right.rows, setRightSelection);
 
-      // Result schema = concat of headers (keine Buttons, alle gleich)
-      resultHeaders = [...left.headers, ...right.headers];
 
       leftIdCol = left.headers[0];
       rightIdCol = right.headers[0];
