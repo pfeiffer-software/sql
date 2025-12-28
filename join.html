@@ -6,19 +6,94 @@
   <title>JOIN-Simulation (manuell)</title>
   <style>
     :root{
-      --border:#222;
-      --grid:#111;
-      --selL:#ff2d8d;
-      --selR:#6ec6ff;
-      --bg:#fff;
-      --muted:#666;
-    }
-    body{
-      margin:16px;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color:#000;
-    }
+  --border:#1f1f1f;
+  --soft:#eaeaea;
+  --card:#ffffff;
+  --shadow: 0 6px 18px rgba(0,0,0,.06);
+  --radius: 14px;
+}
+
+/* Gesamtbreite begrenzen */
+body{
+  max-width: 1100px;
+  margin: 16px auto;
+  padding: 0 14px;
+}
+
+/* Top-Row: links + Pfeile + rechts */
+.top-area{
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 140px minmax(280px, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+/* Kartenoptik */
+.card{
+  background: var(--card);
+  border: 1px solid var(--soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px;
+}
+
+/* Tabellen kompakter */
+table{
+  width: 100%;
+  table-layout: auto;      /* macht es natürlicher schmal */
+  border-collapse: collapse;
+  background: #fff;
+}
+
+th, td{
+  border: 1px solid var(--border);
+  padding: 5px 8px;        /* kleiner */
+  font-size: 13px;         /* kleiner */
+  white-space: nowrap;
+}
+
+caption{
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* Ergebnisbereich zentral und schmaler */
+.result-wrap{
+  margin-top: 16px;
+}
+
+.result-wrap .card{
+  max-width: 900px;        /* Ergebnis nicht zu breit */
+  margin: 0 auto;
+}
+
+/* Pfeilbereich */
+.arrow-card{
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  display:flex;
+  justify-content:center;
+}
+
+.arrow{
+  width: 140px;
+  height: 120px;
+}
+
+/* Responsive: auf kleineren Screens untereinander */
+@media (max-width: 920px){
+  .top-area{
+    grid-template-columns: 1fr;
+  }
+  .arrow-card{
+    display:none; /* auf Handy/iPad im Portrait ausblenden (nicht nötig) */
+  }
+  body{
+    max-width: 760px;
+  }
+}
 
     .topline{
       display:flex;
@@ -100,6 +175,13 @@
       font-size:14px;
     }
 
+    th, td{
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+
     /* Make columns a bit nicer on small screens */
     @media (max-width: 900px){
       .grid{ grid-template-columns:1fr; }
@@ -120,18 +202,37 @@
 
   <div id="err" class="error" style="display:none"></div>
 
-  <div class="grid">
-    <div>
-      <table id="leftTable"></table>
-    </div>
-    <div>
-      <table id="rightTable"></table>
-    </div>
+ <div class="top-area">
+  <div class="card">
+    <table id="leftTable"></table>
   </div>
 
-  <div class="result-wrap">
+  <div class="arrow-card">
+    <!-- Ruhiger, moderner Pfeil als SVG -->
+    <svg class="arrow" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- Links (pink) -->
+      <path d="M10 35 H110 Q130 35 140 55 V70"
+            fill="none" stroke="#ff2d8d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M140 70 L120 55 L160 55 Z" fill="#ff2d8d"/>
+
+      <!-- Rechts (blau) -->
+      <path d="M190 35 H90 Q70 35 60 55 V70"
+            fill="none" stroke="#6ec6ff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M60 70 L40 55 L80 55 Z" fill="#6ec6ff"/>
+    </svg>
+  </div>
+
+  <div class="card">
+    <table id="rightTable"></table>
+  </div>
+</div>
+
+<div class="result-wrap">
+  <div class="card">
     <table id="resultTable"></table>
   </div>
+</div>
+
 
 <script>
 (() => {
