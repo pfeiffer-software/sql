@@ -313,6 +313,8 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
   let right = null;  // {headers, rows}
 
   let selected = null; // { side: "L"|"R", idx: number } oder null
+  let usedLeft = new Set();
+  let usedRight = new Set();
 
 
   // Result schema = leftHeaders + rightHeaders
@@ -431,6 +433,9 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
         // Nach dem Einfügen: Auswahl aufheben
         selected = null;
         clearAllSelections();
+        renderTable(leftTable, `Links (${fileL})`, left.headers, left.rows, setLeftSelection);
+        renderTable(rightTable, `Rechts (${fileR})`, right.headers, right.rows, setRightSelection);
+
 
 
 
