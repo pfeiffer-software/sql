@@ -1,6 +1,6 @@
-﻿Mitarbeiter_id;Vorname;Nachname;Abteilungs_id
-1;Alice;Wunder;107
-2;Bob;Meyer;104
-3;Charlie;Brown;102
-4;Diana;Bowden;105
-5;Eve;Stevenson;111
+mitarbeiter_id;vorname;nachname;rolle
+1;Anna;Schmidt;Lehrerin
+2;Ben;Müller;Lehrer
+3;Clara;Klein;Sekretariat
+4;Daniel;Schneider;Hausmeister
+5;Eva;Fischer;Lehrerin

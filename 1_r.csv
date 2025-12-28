@@ -1,6 +1,6 @@
-﻿Abteilung_id;Bezeichnung
-102;Personal
-104;Finanzen
-105;Entwicklung
-107;Marketing
-111;Verkauf
+schluessel_id;bereich;mitarbeiter_id
+101;Serverraum;1
+102;Chemieraum;2
+103;Verwaltung;3
+104;Sporthalle;
+105;Lehrerzimmer;

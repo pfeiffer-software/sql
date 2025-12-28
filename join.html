@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JOIN-Simulation (manuell)</title>
+  <style>
+    :root{
+      --border:#222;
+      --grid:#111;
+      --selL:#ff2d8d;
+      --selR:#6ec6ff;
+      --bg:#fff;
+      --muted:#666;
+    }
+    body{
+      margin:16px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color:#000;
+    }
+
+    .topline{
+      display:flex;
+      gap:12px;
+      align-items:baseline;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .hint{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.2;
+    }
+    .scenario{
+      font-weight:700;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    table{
+      border-collapse:collapse;
+      width:100%;
+      table-layout:fixed;
+      background:#fff;
+    }
+    th, td{
+      border:1px solid var(--border);
+      padding:6px 8px;
+      font-size:14px;
+      vertical-align:middle;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action:manipulation;
+    }
+    th{
+      font-weight:700;
+      background:#fff;
+    }
+    caption{
+      text-align:left;
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    /* Selection highlight for source tables */
+    tr.selected-left td{ background: color-mix(in srgb, var(--selL) 18%, white); }
+    tr.selected-right td{ background: color-mix(in srgb, var(--selR) 24%, white); }
+
+    /* Result row hover / focus */
+    .result-wrap{
+      margin-top:18px;
+    }
+    .result-wrap caption{
+      margin-top:8px;
+    }
+    tr.result-row:hover td{
+      background:#f4f4f4;
+    }
+    tr.result-row.active td{
+      outline:2px solid #000;
+      outline-offset:-2px;
+      background:#f0f0f0;
+    }
+
+    .error{
+      border:1px solid #c00;
+      padding:10px;
+      margin:12px 0;
+      background:#fff5f5;
+      color:#900;
+      font-size:14px;
+    }
+
+    /* Make columns a bit nicer on small screens */
+    @media (max-width: 900px){
+      .grid{ grid-template-columns:1fr; }
+      th, td{ font-size:13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topline">
+    <div class="scenario">Szenario <span id="scenarioNum">?</span></div>
+    <div class="hint">
+      1) Zeile links oder rechts antippen (markiert) ·
+      2) Ergebniszeile antippen (kopiert) ·
+      3) Letzte Ergebniszeile befüllt → neue leere Zeile erscheint automatisch ·
+      Szenario per URL: <code>?s=1</code>, <code>?s=2</code> …
+    </div>
+  </div>
+
+  <div id="err" class="error" style="display:none"></div>
+
+  <div class="grid">
+    <div>
+      <table id="leftTable"></table>
+    </div>
+    <div>
+      <table id="rightTable"></table>
+    </div>
+  </div>
+
+  <div class="result-wrap">
+    <table id="resultTable"></table>
+  </div>
+
+<script>
+(() => {
+  // ----------------------------
+  // Helpers: URL + CSV parsing
+  // ----------------------------
+  const qs = new URLSearchParams(location.search);
+  const scenario = Number(qs.get("s") || "1");
+  document.getElementById("scenarioNum").textContent = String(scenario);
+
+  const fileL = `${scenario}_l.csv`;
+  const fileR = `${scenario}_r.csv`;
+
+  const errBox = document.getElementById("err");
+  function showError(msg){
+    errBox.style.display = "block";
+    errBox.textContent = msg;
+  }
+
+  function detectDelimiter(line){
+    const candidates = [";", ",", "\t"];
+    let best = {delim:";", count:-1};
+    for(const d of candidates){
+      const c = (line.match(new RegExp(escapeRegExp(d), "g")) || []).length;
+      if(c > best.count) best = {delim:d, count:c};
+    }
+    return best.delim;
+  }
+  function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function parseCSV(text){
+    // minimaler CSV-Parser (ohne komplexe quoted-commas-Fälle).
+    // Für Schul-CSV reicht das i.d.R. Wenn du Quotes brauchst, sagen.
+    const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n").filter(l => l.trim().length>0);
+    if(lines.length === 0) return {headers:[], rows:[]};
+    const delim = detectDelimiter(lines[0]);
+
+    const headers = lines[0].split(delim).map(h => h.trim());
+    const rows = [];
+    for(let i=1;i<lines.length;i++){
+      const parts = lines[i].split(delim);
+      const row = {};
+      headers.forEach((h, idx) => row[h] = (parts[idx] ?? "").trim());
+      rows.push(row);
+    }
+    return {headers, rows};
+  }
+
+  async function loadCSV(path){
+    const res = await fetch(path, {cache:"no-store"});
+    if(!res.ok) throw new Error(`Konnte ${path} nicht laden (HTTP ${res.status}). Liegt die Datei im selben Ordner wie index.html?`);
+    const txt = await res.text();
+    return parseCSV(txt);
+  }
+
+  // ----------------------------
+  // Rendering
+  // ----------------------------
+  function renderTable(el, captionText, headers, rows, onRowClick){
+    el.innerHTML = "";
+    const cap = document.createElement("caption");
+    cap.textContent = captionText;
+    el.appendChild(cap);
+
+    const thead = document.createElement("thead");
+    const trh = document.createElement("tr");
+    headers.forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+    el.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    rows.forEach((r, idx) => {
+      const tr = document.createElement("tr");
+      tr.dataset.index = String(idx);
+      headers.forEach(h => {
+        const td = document.createElement("td");
+        td.textContent = r[h] ?? "";
+        tr.appendChild(td);
+      });
+      tr.addEventListener("click", (e) => {
+        e.preventDefault();
+        onRowClick(idx, tr);
+      }, {passive:false});
+      tbody.appendChild(tr);
+    });
+    el.appendChild(tbody);
+  }
+
+  // ----------------------------
+  // State
+  // ----------------------------
+  let left = null;   // {headers, rows}
+  let right = null;  // {headers, rows}
+
+  let selectedLeftIdx = null;
+  let selectedRightIdx = null;
+
+  // Result schema = leftHeaders + rightHeaders
+  // Result data stored as array of objects with those keys
+  let resultHeaders = [];
+  let resultRows = [];
+
+  const leftTable = document.getElementById("leftTable");
+  const rightTable = document.getElementById("rightTable");
+  const resultTable = document.getElementById("resultTable");
+
+  function clearSelection(tableEl, cls){
+    tableEl.querySelectorAll("tbody tr." + cls).forEach(tr => tr.classList.remove(cls));
+  }
+
+  function setLeftSelection(idx, tr){
+    selectedLeftIdx = idx;
+    clearSelection(leftTable, "selected-left");
+    tr.classList.add("selected-left");
+  }
+  function setRightSelection(idx, tr){
+    selectedRightIdx = idx;
+    clearSelection(rightTable, "selected-right");
+    tr.classList.add("selected-right");
+  }
+
+  function makeEmptyResultRow(){
+    const obj = {};
+    for(const h of resultHeaders) obj[h] = "";
+    return obj;
+  }
+
+  function ensureOneEmptyRowAtEnd(){
+    // Wenn letzte Zeile irgendeinen Wert enthält -> neue leere Zeile anhängen
+    if(resultRows.length === 0){
+      resultRows.push(makeEmptyResultRow());
+      return;
+    }
+    const last = resultRows[resultRows.length - 1];
+    const hasAny = resultHeaders.some(h => (last[h] ?? "") !== "");
+    if(hasAny) resultRows.push(makeEmptyResultRow());
+  }
+
+  function renderResult(){
+    resultTable.innerHTML = "";
+    const cap = document.createElement("caption");
+    cap.textContent = "Ergebnis";
+    resultTable.appendChild(cap);
+
+    const thead = document.createElement("thead");
+    const trh = document.createElement("tr");
+    resultHeaders.forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+    resultTable.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    resultRows.forEach((r, idx) => {
+      const tr = document.createElement("tr");
+      tr.classList.add("result-row");
+      tr.dataset.index = String(idx);
+
+      resultHeaders.forEach(h => {
+        const td = document.createElement("td");
+        td.textContent = r[h] ?? "";
+        tr.appendChild(td);
+      });
+
+      tr.addEventListener("click", (e) => {
+        e.preventDefault();
+        // mark active row briefly
+        resultTable.querySelectorAll("tbody tr.active").forEach(x => x.classList.remove("active"));
+        tr.classList.add("active");
+
+        // Paste selected left/right into this result row
+        const rowObj = resultRows[idx];
+
+        if(selectedLeftIdx !== null){
+          const src = left.rows[selectedLeftIdx];
+          left.headers.forEach(h => rowObj[h] = src[h] ?? "");
+        }
+        if(selectedRightIdx !== null){
+          const src = right.rows[selectedRightIdx];
+          right.headers.forEach(h => rowObj[h] = src[h] ?? "");
+        }
+
+        ensureOneEmptyRowAtEnd();
+        renderResult();
+      }, {passive:false});
+
+      tbody.appendChild(tr);
+    });
+    resultTable.appendChild(tbody);
+  }
+
+  // ----------------------------
+  // Init
+  // ----------------------------
+  (async () => {
+    try{
+      [left, right] = await Promise.all([loadCSV(fileL), loadCSV(fileR)]);
+
+      // Render source tables
+      renderTable(leftTable, `Links (${fileL})`, left.headers, left.rows, setLeftSelection);
+      renderTable(rightTable, `Rechts (${fileR})`, right.headers, right.rows, setRightSelection);
+
+      // Result schema = concat of headers (keine Buttons, alle gleich)
+      resultHeaders = [...left.headers, ...right.headers];
+
+      // start with one empty row
+      resultRows = [makeEmptyResultRow()];
+      renderResult();
+
+    } catch(err){
+      showError(String(err.message || err));
+    }
+  })();
+
+  // Optional: einfache Wisch-Geste für Szenariowechsel (ohne Buttons)
+  let touchStartX = null, touchStartY = null;
+  window.addEventListener("touchstart", (e) => {
+    if(!e.touches || e.touches.length !== 1) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive:true});
+
+  window.addEventListener("touchend", (e) => {
+    if(touchStartX === null || touchStartY === null) return;
+    const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+    if(!t) return;
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+    touchStartX = touchStartY = null;
+    // horizontal swipe only
+    if(Math.abs(dx) > 80 && Math.abs(dy) < 60){
+      const next = scenario + (dx < 0 ? 1 : -1);
+      if(next >= 1){
+        const url = new URL(location.href);
+        url.searchParams.set("s", String(next));
+        location.href = url.toString();
+      }
+    }
+  }, {passive:true});
+})();
+</script>
+</body>
+</html>
