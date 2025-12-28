@@ -151,6 +151,17 @@ caption{
 tbody tr{ cursor: pointer; }
 tbody tr:active td{ transform: scale(0.999); }
 
+/* Quelle: Zeile wurde schon benutzt (bleibt klickbar) */
+tr.used td{
+  background: #f2f2f2;
+  color: #666;
+}
+
+/* Wenn eine benutzte Zeile gerade ausgewählt wird, soll sie trotzdem klar leuchten */
+tr.used.selected-left td { background: rgba(255, 45, 141, 0.18); color:#000; }
+tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
+
+
 
   </style>
 </head>
@@ -276,6 +287,10 @@ tbody tr:active td{ transform: scale(0.999); }
     const tbody = document.createElement("tbody");
     rows.forEach((r, idx) => {
       const tr = document.createElement("tr");
+      // used-Markierung
+      if (el.id === "leftTable" && usedLeft.has(idx)) tr.classList.add("used");
+      if (el.id === "rightTable" && usedRight.has(idx)) tr.classList.add("used");
+
       tr.dataset.index = String(idx);
       headers.forEach(h => {
         const td = document.createElement("td");
@@ -384,16 +399,39 @@ tbody tr:active td{ transform: scale(0.999); }
         resultTable.querySelectorAll("tbody tr.active").forEach(x => x.classList.remove("active"));
         tr.classList.add("active");
 
+        // Wenn nichts ausgewählt ist: Ergebniszeile löschen (Fehlerkorrektur)
+        if(!selected){
+          const isLastRow = (idx === resultRows.length - 1);
+
+          // Letzte (leere) Eingabezeile nicht löschen – stattdessen nur "active" entfernen
+          if(!isLastRow){
+            resultRows.splice(idx, 1);
+          }
+
+          // Stelle sicher, dass immer eine leere Zeile am Ende existiert
+          ensureOneEmptyRowAtEnd();
+          renderResult();
+          return;
+        }
+
+
         // Paste selected left/right into this result row
         const rowObj = resultRows[idx];
 
         if(selected && selected.side === "L"){
           const src = left.rows[selected.idx];
           left.headers.forEach(h => rowObj[h] = src[h] ?? "");
+          usedLeft.add(selected.idx);
         } else if(selected && selected.side === "R"){
           const src = right.rows[selected.idx];
           right.headers.forEach(h => rowObj[h] = src[h] ?? "");
+          usedRight.add(selected.idx);
         }
+
+        // Nach dem Einfügen: Auswahl aufheben
+        selected = null;
+        clearAllSelections();
+
 
 
         ensureOneEmptyRowAtEnd();
