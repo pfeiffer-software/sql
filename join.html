@@ -380,6 +380,13 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
   renderResult();
 }
 
+function displayHeader(h){
+  if(h.startsWith("L_")) return h.slice(2);
+  if(h.startsWith("R_")) return h.slice(2);
+  return h;
+}
+
+
 
   function renderResult(){
     resultTable.innerHTML = "";
@@ -391,9 +398,10 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
     const trh = document.createElement("tr");
     resultHeaders.forEach(h => {
       const th = document.createElement("th");
-      th.textContent = h;
+      th.textContent = displayHeader(h);
       trh.appendChild(th);
     });
+
     thead.appendChild(trh);
     resultTable.appendChild(thead);
 
