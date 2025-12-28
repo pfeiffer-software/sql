@@ -23,7 +23,7 @@ body{
 /* Top-Row: links + Pfeile + rechts */
 .top-area{
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) 140px minmax(280px, 1fr);
+  grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
   gap: 14px;
   align-items: center;
 }
@@ -67,21 +67,6 @@ caption{
   margin: 0 auto;
 }
 
-/* Pfeilbereich */
-.arrow-card{
-  border: none;
-  box-shadow: none;
-  background: transparent;
-  padding: 0;
-  display:flex;
-  justify-content:center;
-}
-
-.arrow{
-  width: 140px;
-  height: 120px;
-}
-
 /* Responsive: auf kleineren Screens untereinander */
 @media (max-width: 920px){
   .top-area{
@@ -111,52 +96,12 @@ caption{
       font-weight:700;
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:16px;
-      align-items:start;
-    }
 
-    table{
-      border-collapse:collapse;
-      width:100%;
-      table-layout:fixed;
-      background:#fff;
-    }
-    th, td{
-      border:1px solid var(--border);
-      padding:6px 8px;
-      font-size:14px;
-      vertical-align:middle;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      user-select:none;
-      -webkit-user-select:none;
-      touch-action:manipulation;
-    }
-    th{
-      font-weight:700;
-      background:#fff;
-    }
-    caption{
-      text-align:left;
-      font-weight:700;
-      margin-bottom:6px;
-    }
 
     /* Selection highlight for source tables */
-    tr.selected-left td{ background: color-mix(in srgb, var(--selL) 18%, white); }
-    tr.selected-right td{ background: color-mix(in srgb, var(--selR) 24%, white); }
+    tr.selected-left td { background: rgba(255, 45, 141, 0.18); }
+    tr.selected-right td { background: rgba(110, 198, 255, 0.22); }
 
-    /* Result row hover / focus */
-    .result-wrap{
-      margin-top:18px;
-    }
-    .result-wrap caption{
-      margin-top:8px;
-    }
     tr.result-row:hover td{
       background:#f4f4f4;
     }
@@ -181,12 +126,21 @@ caption{
       text-overflow: ellipsis;
     }
 
+    .arrow-row{
+  display:flex;
+  justify-content:center;
+  margin: 6px 0 10px;
+}
 
-    /* Make columns a bit nicer on small screens */
-    @media (max-width: 900px){
-      .grid{ grid-template-columns:1fr; }
-      th, td{ font-size:13px; }
-    }
+.arrow-join{
+  width: 220px;     /* klein & unaufdringlich */
+  height: 70px;
+}
+
+tbody tr{ cursor: pointer; }
+tbody tr:active td{ transform: scale(0.999); }
+
+
   </style>
 </head>
 <body>
@@ -207,25 +161,26 @@ caption{
     <table id="leftTable"></table>
   </div>
 
-  <div class="arrow-card">
-    <!-- Ruhiger, moderner Pfeil als SVG -->
-    <svg class="arrow" viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <!-- Links (pink) -->
-      <path d="M10 35 H110 Q130 35 140 55 V70"
-            fill="none" stroke="#ff2d8d" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M140 70 L120 55 L160 55 Z" fill="#ff2d8d"/>
-
-      <!-- Rechts (blau) -->
-      <path d="M190 35 H90 Q70 35 60 55 V70"
-            fill="none" stroke="#6ec6ff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M60 70 L40 55 L80 55 Z" fill="#6ec6ff"/>
-    </svg>
-  </div>
-
-  <div class="card">
+    <div class="card">
     <table id="rightTable"></table>
   </div>
 </div>
+
+<div class="arrow-row" aria-hidden="true">
+  <svg class="arrow-join" viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg">
+    <!-- Links (pink) -->
+    <path d="M30 30 C180 30 210 30 260 95"
+          fill="none" stroke="#ff2d8d" stroke-width="18" stroke-linecap="round"/>
+    <path d="M260 95 L235 85 L252 70 Z" fill="#ff2d8d"/>
+
+    <!-- Rechts (blau) -->
+    <path d="M490 30 C340 30 310 30 260 95"
+          fill="none" stroke="#6ec6ff" stroke-width="18" stroke-linecap="round"/>
+    <path d="M260 95 L268 70 L285 85 Z" fill="#6ec6ff"/>
+  </svg>
+</div>
+
+
 
 <div class="result-wrap">
   <div class="card">
