@@ -230,8 +230,8 @@
   let left = null;   // {headers, rows}
   let right = null;  // {headers, rows}
 
-  let selectedLeftIdx = null;
-  let selectedRightIdx = null;
+  let selected = null; // { side: "L"|"R", idx: number } oder null
+
 
   // Result schema = leftHeaders + rightHeaders
   // Result data stored as array of objects with those keys
@@ -246,16 +246,23 @@
     tableEl.querySelectorAll("tbody tr." + cls).forEach(tr => tr.classList.remove(cls));
   }
 
+  function clearAllSelections(){
+  clearSelection(leftTable, "selected-left");
+  clearSelection(rightTable, "selected-right");
+  }
+
   function setLeftSelection(idx, tr){
-    selectedLeftIdx = idx;
-    clearSelection(leftTable, "selected-left");
+    selected = { side: "L", idx };
+    clearAllSelections();
     tr.classList.add("selected-left");
   }
+
   function setRightSelection(idx, tr){
-    selectedRightIdx = idx;
-    clearSelection(rightTable, "selected-right");
+    selected = { side: "R", idx };
+    clearAllSelections();
     tr.classList.add("selected-right");
   }
+
 
   function makeEmptyResultRow(){
     const obj = {};
@@ -298,7 +305,8 @@
 
       resultHeaders.forEach(h => {
         const td = document.createElement("td");
-        td.textContent = r[h] ?? "";
+        const v = (r[h] ?? "").trim();
+        td.textContent = v === "" ? "NULL" : v;
         tr.appendChild(td);
       });
 
@@ -311,14 +319,14 @@
         // Paste selected left/right into this result row
         const rowObj = resultRows[idx];
 
-        if(selectedLeftIdx !== null){
-          const src = left.rows[selectedLeftIdx];
+        if(selected && selected.side === "L"){
+          const src = left.rows[selected.idx];
           left.headers.forEach(h => rowObj[h] = src[h] ?? "");
-        }
-        if(selectedRightIdx !== null){
-          const src = right.rows[selectedRightIdx];
+        } else if(selected && selected.side === "R"){
+          const src = right.rows[selected.idx];
           right.headers.forEach(h => rowObj[h] = src[h] ?? "");
         }
+
 
         ensureOneEmptyRowAtEnd();
         renderResult();
