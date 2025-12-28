@@ -34,7 +34,7 @@ body{
   border: 1px solid var(--soft);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 10px;
+  padding: 18px;          /* vorher 10px */
 }
 
 /* Tabellen kompakter */
@@ -47,15 +47,18 @@ table{
 
 th, td{
   border: 1px solid var(--border);
-  padding: 5px 8px;        /* kleiner */
-  font-size: 13px;         /* kleiner */
+  padding: 8px 12px;     /* vorher 5px 8px */
+  font-size: 18px;       /* vorher 13px */
   white-space: nowrap;
 }
 
+
 caption{
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
+  font-size: 20px;
 }
+
 
 /* Ergebnisbereich zentral und schmaler */
 .result-wrap{
@@ -63,9 +66,15 @@ caption{
 }
 
 .result-wrap .card{
-  max-width: 900px;        /* Ergebnis nicht zu breit */
+  max-width: 1000px;
   margin: 0 auto;
 }
+
+.result-wrap table th,
+.result-wrap table td{
+  font-size: 19px;
+}
+
 
 /* Responsive: auf kleineren Screens untereinander */
 @media (max-width: 920px){
@@ -88,13 +97,15 @@ caption{
       margin-bottom:12px;
     }
     .hint{
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.2;
+      color:#444;
+      font-size:18px;     /* vorher 14px */
+      line-height:1.4;
     }
     .scenario{
       font-weight:700;
+      font-size:20px;
     }
+
 
 
 
@@ -133,8 +144,8 @@ caption{
 }
 
 .arrow-join{
-  width: 220px;     /* klein & unaufdringlich */
-  height: 70px;
+  width: 330px;    /* vorher 220px */
+  height: 105px;   /* vorher 70px */
 }
 
 tbody tr{ cursor: pointer; }
