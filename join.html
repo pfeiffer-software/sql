@@ -306,7 +306,8 @@
       resultHeaders.forEach(h => {
         const td = document.createElement("td");
         const v = (r[h] ?? "").trim();
-        td.textContent = v === "" ? "NULL" : v;
+        const isLastRow = (idx === resultRows.length - 1);
+        td.textContent = (v === "" && !isLastRow) ? "NULL" : v;
         tr.appendChild(td);
       });
 

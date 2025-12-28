@@ -1,6 +1,6 @@
 mitarbeiter_id;vorname;nachname;rolle
-1;Anna;Schmidt;Lehrerin
+1;Anna;Schmidt;Lehrer
 2;Ben;Müller;Lehrer
 3;Clara;Klein;Sekretariat
 4;Daniel;Schneider;Hausmeister
-5;Eva;Fischer;Lehrerin
+5;Eva;Fischer;Lehrer
