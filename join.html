@@ -311,6 +311,9 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
   // ----------------------------
   let left = null;   // {headers, rows}
   let right = null;  // {headers, rows}
+  let leftIdCol = null;
+  let rightIdCol = null;
+
 
   let selected = null; // { side: "L"|"R", idx: number } oder null
   let usedLeft = new Set();
@@ -410,10 +413,15 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
             resultRows.splice(idx, 1);
           }
 
-          // Stelle sicher, dass immer eine leere Zeile am Ende existiert
           ensureOneEmptyRowAtEnd();
+          recomputeUsedFromResult();
+
+          renderTable(leftTable, `Links (${fileL})`, left.headers, left.rows, setLeftSelection);
+          renderTable(rightTable, `Rechts (${fileR})`, right.headers, right.rows, setRightSelection);
+
           renderResult();
           return;
+
         }
 
 
@@ -423,11 +431,9 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
         if(selected && selected.side === "L"){
           const src = left.rows[selected.idx];
           left.headers.forEach(h => rowObj[h] = src[h] ?? "");
-          usedLeft.add(selected.idx);
         } else if(selected && selected.side === "R"){
           const src = right.rows[selected.idx];
           right.headers.forEach(h => rowObj[h] = src[h] ?? "");
-          usedRight.add(selected.idx);
         }
 
         // Nach dem Einfügen: Auswahl aufheben
@@ -440,6 +446,7 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
 
 
         ensureOneEmptyRowAtEnd();
+        recomputeUsedFromResult();
         renderResult();
       }, {passive:false});
 
@@ -447,6 +454,38 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
     });
     resultTable.appendChild(tbody);
   }
+
+function recomputeUsedFromResult(){
+  const usedLeftIds = new Set();
+  const usedRightIds = new Set();
+
+  // letzte Eingabezeile ignorieren
+  const upto = Math.max(0, resultRows.length - 1);
+  for(let i = 0; i < upto; i++){
+    const row = resultRows[i];
+
+    const lId = (row[leftIdCol] ?? "").trim();
+    const rId = (row[rightIdCol] ?? "").trim();
+
+    if(lId !== "" && lId !== "NULL") usedLeftIds.add(lId);
+    if(rId !== "" && rId !== "NULL") usedRightIds.add(rId);
+  }
+
+  usedLeft = new Set();
+  usedRight = new Set();
+
+  left.rows.forEach((r, idx) => {
+    const id = (r[leftIdCol] ?? "").trim();
+    if(usedLeftIds.has(id)) usedLeft.add(idx);
+  });
+
+  right.rows.forEach((r, idx) => {
+    const id = (r[rightIdCol] ?? "").trim();
+    if(usedRightIds.has(id)) usedRight.add(idx);
+  });
+}
+
+
 
   // ----------------------------
   // Init
@@ -462,9 +501,15 @@ tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
       // Result schema = concat of headers (keine Buttons, alle gleich)
       resultHeaders = [...left.headers, ...right.headers];
 
+      leftIdCol = left.headers[0];
+      rightIdCol = right.headers[0];
+
+
       // start with one empty row
       resultRows = [makeEmptyResultRow()];
+      recomputeUsedFromResult();
       renderResult();
+
 
     } catch(err){
       showError(String(err.message || err));
