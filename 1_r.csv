@@ -1,6 +1,8 @@
-schluessel_id;bereich;mitarbeiter_id
-101;Serverraum;1
-102;Chemieraum;2
-103;Verwaltung;3
-104;Sporthalle;
-105;Lehrerzimmer;
+Schluessel_id;Bereich;Mitarbeiter_id
+1;Serverraum;1
+2;Verkaufsraum;2
+3;Verwaltung;4
+4;Generalschlüssel;
+5;Verwaltung;1
+6;Verkaufsraum;
+7;Verwaltung
