@@ -22,10 +22,18 @@ body{
 
 /* Top-Row: links + Pfeile + rechts */
 .top-area{
-  display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(280px, 1fr);
+  display:grid;
+  grid-template-columns: 340px 1fr 340px; /* links klein, mitte flexibel, rechts klein */
   gap: 14px;
-  align-items: center;
+  align-items:start;
+}
+
+/* Linke/rechte Karten sollen nicht unnötig breit werden */
+.top-area .card{
+  justify-self: start;
+}
+.top-area .card:last-child{
+  justify-self: end;
 }
 
 /* Kartenoptik */
@@ -66,9 +74,10 @@ caption{
 }
 
 .result-wrap .card{
-  max-width: 1000px;
-  margin: 0 auto;
+  max-width: 900px;
+  margin: 18px auto 0;
 }
+
 
 .result-wrap table th,
 .result-wrap table td{
@@ -137,16 +146,18 @@ caption{
       text-overflow: ellipsis;
     }
 
-    .arrow-row{
-  display:flex;
-  justify-content:center;
-  margin: 6px 0 10px;
-}
+   .arrow-row{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin: 0;              /* kein zusätzlicher Abstand */
+    }
 
-.arrow-join{
-  width: 330px;    /* vorher 220px */
-  height: 105px;   /* vorher 70px */
-}
+    .arrow-join{
+      width: 260px;           /* etwas kleiner, damit es kompakt bleibt */
+      height: 90px;
+    }
+
 
 tbody tr{ cursor: pointer; }
 tbody tr:active td{ transform: scale(0.999); }
@@ -179,15 +190,21 @@ td.split-left{
 
   <div id="err" class="error" style="display:none"></div>
 
- <div class="top-area">
+<div class="top-area">
   <div class="card">
     <table id="leftTable"></table>
   </div>
 
-    <div class="card">
+  <div class="arrow-row" aria-hidden="true">
+    <!-- SVG bleibt gleich -->
+    ...
+  </div>
+
+  <div class="card">
     <table id="rightTable"></table>
   </div>
 </div>
+
 
 <div class="arrow-row" aria-hidden="true">
   <svg class="arrow-join" viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg">
