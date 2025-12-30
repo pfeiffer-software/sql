@@ -1,6 +1,9 @@
-﻿Abteilung_id;Bezeichnung
-102;Personal
-104;Finanzen
-105;Entwicklung
-107;Marketing
-111;Verkauf
+Mitarbeiter_id;Vorname Nachname;Abteilung
+1;Anna	Schmidt;IT
+2;Sami  Haddad;Verkauf
+3;Clara	Klein;IT
+4;Daniel	Schneider;Verwaltung
+5;Eva	Fischer;Verkauf
+6;Felix	Bauer;Verwaltung
+7;Aylin Yilmaz;IT
+8;Omar  Benali;Verkauf
