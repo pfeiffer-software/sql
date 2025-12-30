@@ -1,9 +1,8 @@
-Mitarbeiter_id;Vorname Nachname;Abteilung
-1;Anna	Schmidt;IT
-2;Ben	Müller;Verkauf
-3;Clara	Klein;IT
-4;Daniel	Schneider;Verwaltung
-5;Eva	Fischer;Verkauf
-6;Felix	Bauer;Verwaltung
-7;Gina	Winter;IT
-8;Hannes	Weber;Verkauf
+Schluessel_id;Bereich;Mitarbeiter_id
+1;Serverraum;1
+2;Verkaufsraum;2
+3;Verwaltung;4
+4;Generalschlüssel;
+5;Verwaltung;1
+6;Verkaufsraum;
+7;Verwaltung
