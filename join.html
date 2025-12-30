@@ -525,8 +525,8 @@ function recomputeUsedFromResult(){
       leftColumnCount = left.headers.length;
 
       // Render source tables
-      renderTable(leftTable, `Links (${fileL})`, left.headers, left.rows, setLeftSelection);
-      renderTable(rightTable, `Rechts (${fileR})`, right.headers, right.rows, setRightSelection);
+      renderTable(leftTable, `Schlüssel)`, left.headers, left.rows, setLeftSelection);
+      renderTable(rightTable, `Mitarbeiter`, right.headers, right.rows, setRightSelection);
 
 
       leftIdCol = left.headers.find(h => /_id$/i.test(h)) ?? left.headers[0];
