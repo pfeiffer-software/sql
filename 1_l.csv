@@ -1,8 +1,8 @@
-Schluessel_id;Bereich;Mitarbeiter_id
-1;Serverraum;1
-2;Verkaufsraum;2
-3;Verwaltung;4
-4;Generalschlüssel;
-5;Verwaltung;1
-6;Verkaufsraum;
-7;Verwaltung
+Schueler_id,Vorname,Nachname,Klasse
+S3324,Jan,Schulz,9b
+S3197,Paul,Demir,9b
+S3147,Yara,Aslan,9b
+S3149,Karim,Rahmani,9a
+S3286,Tim,Meier,9b
+S3511,Omar,Kaya,9a
+S3407,Can,Park,9b
