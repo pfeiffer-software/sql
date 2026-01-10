@@ -1,4 +1,7 @@
 Schueler_id,Allergen,Stufe
 S3324,Nüsse,mittel
 S3197,Gluten,stark
+S3340,Nüsse,mittel
 S3147,Nüsse,leicht
+S3155,Gluten,leicht
+S3206,Gluten,mittel
