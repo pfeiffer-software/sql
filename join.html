@@ -378,8 +378,8 @@ td.split-left{
   ensureOneEmptyRowAtEnd();
   recomputeUsedFromResult();
 
-  renderTable(leftTable, `Schlüssel`, left.headers, left.rows, setLeftSelection);
-  renderTable(rightTable, `Mitarbeiter`, right.headers, right.rows, setRightSelection);
+  renderTable(leftTable, `philosophieKlasse9`, left.headers, left.rows, setLeftSelection);
+  renderTable(rightTable, `allergien`, right.headers, right.rows, setRightSelection);
   renderResult();
 }
 
@@ -525,8 +525,8 @@ function recomputeUsedFromResult(){
       leftColumnCount = left.headers.length;
 
       // Render source tables
-      renderTable(leftTable, `Schlüssel`, left.headers, left.rows, setLeftSelection);
-      renderTable(rightTable, `Mitarbeiter`, right.headers, right.rows, setRightSelection);
+      renderTable(leftTable, `philosophieKlasse9`, left.headers, left.rows, setLeftSelection);
+      renderTable(rightTable, `allergien`, right.headers, right.rows, setRightSelection);
 
 
       leftIdCol = left.headers.find(h => /_id$/i.test(h)) ?? left.headers[0];
