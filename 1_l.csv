@@ -1,8 +1,8 @@
-Schueler_id,Vorname,Nachname,Klasse
-S3296,Sophie,Lehmann,9c
-S3147,Yara,Darwish,9b
-S3340,Jonas,Schmidt,9a
-S3750,Can,Aksoy,9b
-S3197,Kerem,Demir,9b
-S3407,Elias,Park,9c
-S3324,Jan,Schulz,9a
+Schluessel_id;Bereich;Mitarbeiter_id
+1;Serverraum;1
+2;Verkaufsraum;2
+3;Verwaltung;4
+4;Generalschlüssel;
+5;Verwaltung;1
+6;Verkaufsraum;
+7;Verwaltung
