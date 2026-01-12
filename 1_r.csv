@@ -1,9 +1,7 @@
-Mitarbeiter_id;Vorname Nachname;Abteilung
-1;Anna	Schmidt;IT
-2;Sami  Haddad;Verkauf
-3;Clara	Klein;IT
-4;Daniel	Schneider;Verwaltung
-5;Eva	Fischer;Verkauf
-6;Felix	Bauer;Verwaltung
-7;Aylin Yilmaz;IT
-8;Omar  Benali;Verkauf
+Schueler_id,Allergen,Stufe
+S7210,Nüsse,stark
+S3197,Gluten,stark
+S3324,Nüsse,mittel
+S3147,Nüsse,leicht
+S7479,Sellerie,mittel
+S7016,Soja,leicht
