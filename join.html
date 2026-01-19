@@ -171,11 +171,6 @@ td.split-left{
   </style>
 </head>
 <body>
-  <div class="topline">
-    <div class="scenario">Tabellenverknüpfung <span id="scenarioNum">?</span></div>
-    <div class="hint">
-    </div>
-  </div>
 
   <div id="err" class="error" style="display:none"></div>
 
@@ -219,7 +214,6 @@ td.split-left{
   // ----------------------------
   const qs = new URLSearchParams(location.search);
   const scenario = Number(qs.get("s") || "1");
-  document.getElementById("scenarioNum").textContent = String(scenario);
 
   const fileL = `${scenario}_l.csv`;
   const fileR = `${scenario}_r.csv`;
