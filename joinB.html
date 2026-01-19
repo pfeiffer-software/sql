@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JOIN-Simulation (manuell)</title>
+  <style>
+    :root{
+      --border:#1f1f1f;
+      --soft:#eaeaea;
+      --card:#ffffff;
+      --shadow: 0 6px 18px rgba(0,0,0,.06);
+      --radius: 14px;
+    }
+
+    body{
+      max-width: 1100px;
+      margin: 16px auto;
+      padding: 0 14px;
+    }
+
+    /* 3 Tabellen oben */
+    .top-area{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(240px, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--soft);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      overflow-x: auto; /* wichtig bei 3 Tabellen/Result */
+    }
+
+    table{
+      width: 100%;
+      table-layout: auto;
+      border-collapse: collapse;
+      background: #fff;
+    }
+
+    th, td{
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      font-size: 18px;
+      white-space: nowrap;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    caption{
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .result-wrap{
+      margin-top: 16px;
+    }
+    .result-wrap .card{
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .result-wrap table th,
+    .result-wrap table td{
+      font-size: 19px;
+    }
+
+    @media (max-width: 1020px){
+      .top-area{ grid-template-columns: 1fr; }
+      body{ max-width: 760px; }
+    }
+
+    .topline{
+      display:flex;
+      gap:12px;
+      align-items:baseline;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .hint{
+      color:#444;
+      font-size:18px;
+      line-height:1.4;
+    }
+    .scenario{
+      font-weight:700;
+      font-size:20px;
+    }
+
+    /* Selection highlight */
+    tr.selected-left td  { background: rgba(255, 45, 141, 0.18); }   /* L = pink */
+    tr.selected-mid td   { background: rgba(120, 210, 120, 0.22); }  /* M = grün */
+    tr.selected-right td { background: rgba(110, 198, 255, 0.22); }  /* R = blau */
+
+    tr.result-row:hover td{
+      background:#f4f4f4;
+    }
+    tr.result-row.active td{
+      outline:2px solid #000;
+      outline-offset:-2px;
+      background:#f0f0f0;
+    }
+
+    .error{
+      border:1px solid #c00;
+      padding:10px;
+      margin:12px 0;
+      background:#fff5f5;
+      color:#900;
+      font-size:14px;
+    }
+
+    .arrow-row{
+      display:flex;
+      justify-content:center;
+      gap: 18px;
+      margin: 6px 0 10px;
+      flex-wrap: wrap;
+    }
+
+    .arrow-join{
+      width: 300px;
+      height: 95px;
+    }
+
+    tbody tr{ cursor: pointer; }
+    tbody tr:active td{ transform: scale(0.999); }
+
+    tr.used td{
+      background: #f2f2f2;
+      color: #666;
+    }
+
+    tr.used.selected-left td  { background: rgba(255, 45, 141, 0.18); color:#000; }
+    tr.used.selected-mid td   { background: rgba(120, 210, 120, 0.22); color:#000; }
+    tr.used.selected-right td { background: rgba(110, 198, 255, 0.22); color:#000; }
+
+    /* Trennlinien im Ergebnis */
+    th.split-left, td.split-left{
+      border-left: 4px solid #000 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="topline">
+    <div class="scenario">Tabellenverknüpfung <span id="scenarioNum">?</span></div>
+    <div class="hint"></div>
+  </div>
+
+  <div id="err" class="error" style="display:none"></div>
+
+  <div class="top-area">
+    <div class="card">
+      <table id="leftTable"></table>
+    </div>
+
+    <div class="card">
+      <table id="midTable"></table>
+    </div>
+
+    <div class="card">
+      <table id="rightTable"></table>
+    </div>
+  </div>
+
+  <!-- Pfeile: L<->M und M<->R -->
+  <div class="arrow-row" aria-hidden="true">
+    <!-- L <-> M -->
+    <svg class="arrow-join" viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg">
+      <path d="M30 30 C180 30 210 30 260 95"
+            fill="none" stroke="#ff2d8d" stroke-width="18" stroke-linecap="round"/>
+      <path d="M260 95 L235 85 L252 70 Z" fill="#ff2d8d"/>
+
+      <path d="M490 30 C340 30 310 30 260 95"
+            fill="none" stroke="#78d278" stroke-width="18" stroke-linecap="round"/>
+      <path d="M260 95 L268 70 L285 85 Z" fill="#78d278"/>
+    </svg>
+
+    <!-- M <-> R -->
+    <svg class="arrow-join" viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg">
+      <path d="M30 30 C180 30 210 30 260 95"
+            fill="none" stroke="#78d278" stroke-width="18" stroke-linecap="round"/>
+      <path d="M260 95 L235 85 L252 70 Z" fill="#78d278"/>
+
+      <path d="M490 30 C340 30 310 30 260 95"
+            fill="none" stroke="#6ec6ff" stroke-width="18" stroke-linecap="round"/>
+      <path d="M260 95 L268 70 L285 85 Z" fill="#6ec6ff"/>
+    </svg>
+  </div>
+
+  <div class="result-wrap">
+    <div class="card">
+      <table id="resultTable"></table>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ----------------------------
+  // Helpers: URL + CSV parsing
+  // ----------------------------
+  const qs = new URLSearchParams(location.search);
+  const scenario = Number(qs.get("s") || "1");
+  document.getElementById("scenarioNum").textContent = String(scenario);
+
+  const fileL = `${scenario}_l.csv`;
+  const fileM = `${scenario}_m.csv`;
+  const fileR = `${scenario}_r.csv`;
+
+  const errBox = document.getElementById("err");
+  function showError(msg){
+    errBox.style.display = "block";
+    errBox.textContent = msg;
+  }
+
+  function detectDelimiter(line){
+    const candidates = [";", ",", "\t"];
+    let best = {delim:";", count:-1};
+    for(const d of candidates){
+      const c = (line.match(new RegExp(escapeRegExp(d), "g")) || []).length;
+      if(c > best.count) best = {delim:d, count:c};
+    }
+    return best.delim;
+  }
+  function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  function parseCSV(text){
+    const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n").filter(l => l.trim().length>0);
+    if(lines.length === 0) return {headers:[], rows:[]};
+    const delim = detectDelimiter(lines[0]);
+
+    const headers = lines[0].split(delim).map(h => h.trim());
+    const rows = [];
+    for(let i=1;i<lines.length;i++){
+      const parts = lines[i].split(delim);
+      const row = {};
+      headers.forEach((h, idx) => row[h] = (parts[idx] ?? "").trim());
+      rows.push(row);
+    }
+    return {headers, rows};
+  }
+
+  async function loadCSV(path){
+    const res = await fetch(path, {cache:"no-store"});
+    if(!res.ok) throw new Error(`Konnte ${path} nicht laden (HTTP ${res.status}). Liegt die Datei im selben Ordner wie index.html?`);
+    const txt = await res.text();
+    return parseCSV(txt);
+  }
+
+  // ----------------------------
+  // Rendering
+  // ----------------------------
+  function renderTable(el, captionText, headers, rows, onRowClick){
+    el.innerHTML = "";
+    const cap = document.createElement("caption");
+    cap.textContent = captionText;
+    el.appendChild(cap);
+
+    const thead = document.createElement("thead");
+    const trh = document.createElement("tr");
+    headers.forEach(h => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+    el.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    rows.forEach((r, idx) => {
+      const tr = document.createElement("tr");
+
+      if (el.id === "leftTable" && usedLeft.has(idx)) tr.classList.add("used");
+      if (el.id === "midTable"  && usedMid.has(idx))  tr.classList.add("used");
+      if (el.id === "rightTable"&& usedRight.has(idx))tr.classList.add("used");
+
+      tr.dataset.index = String(idx);
+      headers.forEach(h => {
+        const td = document.createElement("td");
+        td.textContent = r[h] ?? "";
+        tr.appendChild(td);
+      });
+      tr.addEventListener("click", (e) => {
+        e.preventDefault();
+        onRowClick(idx, tr);
+      }, {passive:false});
+      tbody.appendChild(tr);
+    });
+    el.appendChild(tbody);
+  }
+
+  // ----------------------------
+  // State
+  // ----------------------------
+  let left = null;
+  let mid  = null;
+  let right= null;
+
+  let leftIdCol = null;
+  let midIdCol  = null;
+  let rightIdCol= null;
+
+  let leftMap = null;
+  let midMap  = null;
+  let rightMap= null;
+
+  let leftColumnCount = 0;
+  let midColumnCount  = 0;
+
+  let selected = null; // { side:"L"|"M"|"R", idx:number }
+  let usedLeft  = new Set();
+  let usedMid   = new Set();
+  let usedRight = new Set();
+
+  let resultHeaders = [];
+  let resultRows = [];
+
+  const leftTable   = document.getElementById("leftTable");
+  const midTable    = document.getElementById("midTable");
+  const rightTable  = document.getElementById("rightTable");
+  const resultTable = document.getElementById("resultTable");
+
+  function clearSelection(tableEl, cls){
+    tableEl.querySelectorAll("tbody tr." + cls).forEach(tr => tr.classList.remove(cls));
+  }
+
+  function clearAllSelections(){
+    clearSelection(leftTable, "selected-left");
+    clearSelection(midTable, "selected-mid");
+    clearSelection(rightTable, "selected-right");
+  }
+
+  function setLeftSelection(idx, tr){
+    selected = { side: "L", idx };
+    clearAllSelections();
+    tr.classList.add("selected-left");
+  }
+  function setMidSelection(idx, tr){
+    selected = { side: "M", idx };
+    clearAllSelections();
+    tr.classList.add("selected-mid");
+  }
+  function setRightSelection(idx, tr){
+    selected = { side: "R", idx };
+    clearAllSelections();
+    tr.classList.add("selected-right");
+  }
+
+  function makeEmptyResultRow(){
+    const obj = {};
+    for(const h of resultHeaders) obj[h] = "";
+    return obj;
+  }
+
+  function ensureOneEmptyRowAtEnd(){
+    if(resultRows.length === 0){
+      resultRows.push(makeEmptyResultRow());
+      return;
+    }
+    const last = resultRows[resultRows.length - 1];
+    const hasAny = resultHeaders.some(h => (last[h] ?? "") !== "");
+    if(hasAny) resultRows.push(makeEmptyResultRow());
+  }
+
+  function refreshAll(){
+    ensureOneEmptyRowAtEnd();
+    recomputeUsedFromResult();
+
+    renderTable(leftTable,  `philosophieKlasse9`, left.headers, left.rows, setLeftSelection);
+    renderTable(midTable,   `1_m`,              mid.headers,  mid.rows,  setMidSelection);
+    renderTable(rightTable, `allergien`,        right.headers,right.rows,setRightSelection);
+
+    renderResult();
+  }
+
+  function displayHeader(h){
+    if(h.startsWith("L_")) return h.slice(2);
+    if(h.startsWith("M_")) return h.slice(2);
+    if(h.startsWith("R_")) return h.slice(2);
+    return h;
+  }
+
+  function renderResult(){
+    resultTable.innerHTML = "";
+    const cap = document.createElement("caption");
+    cap.textContent = "Ergebnis";
+    resultTable.appendChild(cap);
+
+    const thead = document.createElement("thead");
+    const trh = document.createElement("tr");
+
+    const split1 = leftColumnCount;
+    const split2 = leftColumnCount + midColumnCount;
+
+    resultHeaders.forEach((h, idx) => {
+      const th = document.createElement("th");
+      th.textContent = displayHeader(h);
+
+      if(idx === split1 || idx === split2){
+        th.classList.add("split-left");
+      }
+      trh.appendChild(th);
+    });
+
+    thead.appendChild(trh);
+    resultTable.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    resultRows.forEach((r, idx) => {
+      const tr = document.createElement("tr");
+      tr.classList.add("result-row");
+      tr.dataset.index = String(idx);
+
+      resultHeaders.forEach((h, colIdx) => {
+        const td = document.createElement("td");
+        const v = (r[h] ?? "").trim();
+        const isLastRow = (idx === resultRows.length - 1);
+        td.textContent = (v === "" && !isLastRow) ? "NULL" : v;
+
+        if(colIdx === split1 || colIdx === split2){
+          td.classList.add("split-left");
+        }
+        tr.appendChild(td);
+      });
+
+      tr.addEventListener("click", (e) => {
+        e.preventDefault();
+        resultTable.querySelectorAll("tbody tr.active").forEach(x => x.classList.remove("active"));
+
+        if(!selected){
+          const isLastRow = (idx === resultRows.length - 1);
+          if(!isLastRow){
+            resultRows.splice(idx, 1);
+          }
+          refreshAll();
+          return;
+        }
+
+        const rowObj = resultRows[idx];
+
+        if(selected.side === "L"){
+          const src = left.rows[selected.idx];
+          left.headers.forEach(h => rowObj[leftMap[h]] = src[h] ?? "");
+        } else if(selected.side === "M"){
+          const src = mid.rows[selected.idx];
+          mid.headers.forEach(h => rowObj[midMap[h]] = src[h] ?? "");
+        } else if(selected.side === "R"){
+          const src = right.rows[selected.idx];
+          right.headers.forEach(h => rowObj[rightMap[h]] = src[h] ?? "");
+        }
+
+        selected = null;
+        refreshAll();
+      }, {passive:false});
+
+      tbody.appendChild(tr);
+    });
+
+    resultTable.appendChild(tbody);
+  }
+
+  function recomputeUsedFromResult(){
+    const usedLeftIds  = new Set();
+    const usedMidIds   = new Set();
+    const usedRightIds = new Set();
+
+    const upto = Math.max(0, resultRows.length - 1);
+    for(let i = 0; i < upto; i++){
+      const row = resultRows[i];
+
+      const lId = (row[leftMap[leftIdCol]] ?? "").trim();
+      const mId = (row[midMap[midIdCol]]   ?? "").trim();
+      const rId = (row[rightMap[rightIdCol]]?? "").trim();
+
+      if(lId !== "" && lId !== "NULL") usedLeftIds.add(lId);
+      if(mId !== "" && mId !== "NULL") usedMidIds.add(mId);
+      if(rId !== "" && rId !== "NULL") usedRightIds.add(rId);
+    }
+
+    usedLeft = new Set();
+    usedMid  = new Set();
+    usedRight= new Set();
+
+    left.rows.forEach((r, idx) => {
+      const id = (r[leftIdCol] ?? "").trim();
+      if(usedLeftIds.has(id)) usedLeft.add(idx);
+    });
+
+    mid.rows.forEach((r, idx) => {
+      const id = (r[midIdCol] ?? "").trim();
+      if(usedMidIds.has(id)) usedMid.add(idx);
+    });
+
+    right.rows.forEach((r, idx) => {
+      const id = (r[rightIdCol] ?? "").trim();
+      if(usedRightIds.has(id)) usedRight.add(idx);
+    });
+  }
+
+  // ----------------------------
+  // Init
+  // ----------------------------
+  (async () => {
+    try{
+      [left, mid, right] = await Promise.all([loadCSV(fileL), loadCSV(fileM), loadCSV(fileR)]);
+
+      leftMap  = Object.fromEntries(left.headers.map(h  => [h, `L_${h}`]));
+      midMap   = Object.fromEntries(mid.headers.map(h   => [h, `M_${h}`]));
+      rightMap = Object.fromEntries(right.headers.map(h => [h, `R_${h}`]));
+
+      resultHeaders = [
+        ...left.headers.map(h => leftMap[h]),
+        ...mid.headers.map(h  => midMap[h]),
+        ...right.headers.map(h=> rightMap[h])
+      ];
+
+      leftColumnCount = left.headers.length;
+      midColumnCount  = mid.headers.length;
+
+      leftIdCol  = left.headers.find(h  => /_id$/i.test(h))  ?? left.headers[0];
+      midIdCol   = mid.headers.find(h   => /_id$/i.test(h))  ?? mid.headers[0];
+      rightIdCol = right.headers.find(h => /_id$/i.test(h))  ?? right.headers[0];
+
+      resultRows = [makeEmptyResultRow()];
+      recomputeUsedFromResult();
+
+      renderTable(leftTable,  `philosophieKlasse9`, left.headers, left.rows, setLeftSelection);
+      renderTable(midTable,   `1_m`,              mid.headers,  mid.rows,  setMidSelection);
+      renderTable(rightTable, `allergien`,        right.headers,right.rows,setRightSelection);
+      renderResult();
+
+    } catch(err){
+      showError(String(err.message || err));
+    }
+  })();
+
+  // Swipe (optional)
+  let touchStartX = null, touchStartY = null;
+  window.addEventListener("touchstart", (e) => {
+    if(!e.touches || e.touches.length !== 1) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive:true});
+
+  window.addEventListener("touchend", (e) => {
+    if(touchStartX === null || touchStartY === null) return;
+    const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+    if(!t) return;
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+    touchStartX = touchStartY = null;
+
+    if(Math.abs(dx) > 80 && Math.abs(dy) < 60){
+      const next = scenario + (dx < 0 ? 1 : -1);
+      if(next >= 1){
+        const url = new URL(location.href);
+        url.searchParams.set("s", String(next));
+        location.href = url.toString();
+      }
+    }
+  }, {passive:true});
+})();
+</script>
+</body>
+</html>
