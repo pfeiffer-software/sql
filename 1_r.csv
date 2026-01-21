@@ -1,13 +1,11 @@
 Schueler_id,Allergen,Stufe
-S1057,Ibuprofen,stark
+S1057,Fructose,stark
 S1200,Lactose,mittel
 S1590,Glutamat,sehr stark
-S1802,Gluten,stark
 S2196,Gluten,mittel
 S2328,Nüsse,stark
 S2401,Fruktose,mittel
 S3079,Fruktose,mittel
-S3148,Soja,stark
 S4485,Nüsse,mittel
 S4835,Fruktose,leicht
 S5366,Nüsse,leicht
@@ -15,6 +13,5 @@ S5979,Lactose,leicht
 S5979,Sesam,leicht
 S6280,Nüsse,mittel
 S6480,Fruktose,mittel
-S6816,Fruktose,mittel
 S7375,Fructose,mittel
 S7661,Gluten,mittel
