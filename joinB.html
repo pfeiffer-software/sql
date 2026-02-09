@@ -7,32 +7,24 @@
   <style>
     :root{
       --border:#1f1f1f;
-      --soft:#e7e7e7;
+      --soft:#eaeaea;
       --card:#ffffff;
-      --bg:#f6f7f9;
-      --shadow: 0 8px 20px rgba(0,0,0,.08);
+      --shadow: 0 6px 18px rgba(0,0,0,.06);
       --radius: 14px;
-      --header:#f2f3f5;
-      --text:#111;
     }
-
-    *{ box-sizing:border-box; }
 
     body{
-      margin:0;
-      font-family: "Segoe UI", Arial, sans-serif;
-      color:var(--text);
-      background:var(--bg);
-      max-width: 1400px;       /* breiter als vorher */
-      padding: 16px;
-      margin-inline: auto;
+      max-width: 1100px;
+      margin: 16px auto;
+      padding: 0 14px;
     }
 
+    /* 3 Tabellen oben */
     .top-area{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(300px, 1fr));
+      display: grid;
+      grid-template-columns: repeat(3, minmax(240px, 1fr));
       gap: 14px;
-      align-items:start;
+      align-items: start;
     }
 
     .card{
@@ -40,79 +32,79 @@
       border: 1px solid var(--soft);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 14px;
-      min-width: 0; /* wichtig in CSS Grid, damit Scroll sauber funktioniert */
-    }
-
-    .table-scroll{
-      width:100%;
-      overflow:auto;
-      border:1px solid #d9d9d9;
-      border-radius:10px;
-      background:#fff;
-    }
-
-    /* Höhe getrennt für obere Tabellen und Ergebnis */
-    .table-scroll.top{
-      max-height: 330px;
-    }
-    .table-scroll.result{
-      max-height: 260px;
+      padding: 18px;
+      overflow-x: auto; /* wichtig bei 3 Tabellen/Result */
     }
 
     table{
-      width:max-content;       /* nimmt so viel Platz wie nötig */
-      min-width:100%;          /* mindestens Card-Breite */
-      border-collapse:collapse;
-      background:#fff;
+      width: 100%;
+      table-layout: auto;
+      border-collapse: collapse;
+      background: #fff;
     }
 
     th, td{
-      border:1px solid var(--border);
-      padding: 8px 10px;
+      border: 1px solid var(--border);
+      padding: 8px 12px;
       font-size: 18px;
-      white-space: nowrap;     /* nicht umbrechen */
-      /* KEIN ellipsis, kein max-width => alles sichtbar per Scroll */
-    }
-
-    th{
-      background: var(--header);
-      position: sticky;
-      top: 0;
-      z-index: 2;
+      white-space: nowrap;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     caption{
-      caption-side: top;
       font-weight: 700;
-      margin: 8px 0 10px;
-      font-size: 28px;
-      text-align: center;
+      margin-bottom: 10px;
+      font-size: 20px;
     }
 
     .result-wrap{
-      margin-top: 14px;
+      margin-top: 16px;
     }
-
     .result-wrap .card{
-      padding: 14px;
+      max-width: 1100px;
+      margin: 0 auto;
     }
-
     .result-wrap table th,
     .result-wrap table td{
-      font-size: 30px;
-      padding: 10px 12px;
+      font-size: 19px;
     }
 
-    @media (max-width: 1200px){
-      .top-area{ grid-template-columns: repeat(2, minmax(280px,1fr)); }
-    }
-
-    @media (max-width: 780px){
+    @media (max-width: 1020px){
       .top-area{ grid-template-columns: 1fr; }
-      body{ padding:10px; }
-      th, td{ font-size:16px; }
-      .result-wrap table th, .result-wrap table td{ font-size:18px; }
+      body{ max-width: 760px; }
+    }
+
+    .topline{
+      display:flex;
+      gap:12px;
+      align-items:baseline;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .hint{
+      color:#444;
+      font-size:18px;
+      line-height:1.4;
+    }
+    .scenario{
+      font-weight:700;
+      font-size:20px;
+    }
+
+    /* Selection highlight */
+    tr.selected-left td  { background: rgba(255, 45, 141, 0.18); }   /* L = pink */
+    tr.selected-mid td   { background: rgba(120, 210, 120, 0.22); }  /* M = grün */
+    tr.selected-right td { background: rgba(110, 198, 255, 0.22); }  /* R = blau */
+
+    tr.result-row:hover td{
+      background:#f4f4f4;
+    }
+    tr.result-row.active td{
+      outline:2px solid #000;
+      outline-offset:-2px;
+      background:#f0f0f0;
     }
 
     .error{
@@ -122,14 +114,13 @@
       background:#fff5f5;
       color:#900;
       font-size:14px;
-      border-radius:10px;
     }
 
     .arrow-row{
       display:flex;
       justify-content:center;
       gap: 18px;
-      margin: 8px 0 12px;
+      margin: 6px 0 10px;
       flex-wrap: wrap;
     }
 
@@ -138,20 +129,8 @@
       height: 95px;
     }
 
-    tbody tr{ cursor:pointer; }
-    tbody tr:hover td{ background:#fafafa; }
+    tbody tr{ cursor: pointer; }
     tbody tr:active td{ transform: scale(0.999); }
-
-    /* Selection highlight */
-    tr.selected-left td  { background: rgba(255, 45, 141, 0.18); }   /* L = pink */
-    tr.selected-mid td   { background: rgba(120, 210, 120, 0.22); }  /* M = grün */
-    tr.selected-right td { background: rgba(110, 198, 255, 0.22); }  /* R = blau */
-
-    tr.result-row.active td{
-      outline:2px solid #000;
-      outline-offset:-2px;
-      background:#f0f0f0;
-    }
 
     tr.used td{
       background: #f2f2f2;
@@ -173,21 +152,15 @@
 
   <div class="top-area">
     <div class="card">
-      <div class="table-scroll top">
-        <table id="leftTable"></table>
-      </div>
+      <table id="leftTable"></table>
     </div>
 
     <div class="card">
-      <div class="table-scroll top">
-        <table id="midTable"></table>
-      </div>
+      <table id="midTable"></table>
     </div>
 
     <div class="card">
-      <div class="table-scroll top">
-        <table id="rightTable"></table>
-      </div>
+      <table id="rightTable"></table>
     </div>
   </div>
 
@@ -218,9 +191,7 @@
 
   <div class="result-wrap">
     <div class="card">
-      <div class="table-scroll result">
-        <table id="resultTable"></table>
-      </div>
+      <table id="resultTable"></table>
     </div>
   </div>
 
@@ -243,7 +214,7 @@
   }
 
   function detectDelimiter(line){
-    const candidates = [";", ",", "\\t"];
+    const candidates = [";", ",", "\t"];
     let best = {delim:";", count:-1};
     for(const d of candidates){
       const c = (line.match(new RegExp(escapeRegExp(d), "g")) || []).length;
@@ -251,10 +222,10 @@
     }
     return best.delim;
   }
-  function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&'); }
+  function escapeRegExp(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
   function parseCSV(text){
-    const lines = text.replace(/\\r\\n/g,"\\n").replace(/\\r/g,"\\n").split("\\n").filter(l => l.trim().length>0);
+    const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n").filter(l => l.trim().length>0);
     if(lines.length === 0) return {headers:[], rows:[]};
     const delim = detectDelimiter(lines[0]);
 
@@ -396,7 +367,7 @@
     recomputeUsedFromResult();
 
     renderTable(leftTable,  `Jahrgangsstufe_5`, left.headers, left.rows, setLeftSelection);
-    renderTable(midTable,   `Notfallkontakte`,  mid.headers,  mid.rows,  setMidSelection);
+    renderTable(midTable,   `Notfallkontakte`,              mid.headers,  mid.rows,  setMidSelection);
     renderTable(rightTable, `Allergien`,        right.headers,right.rows,setRightSelection);
 
     renderResult();
@@ -554,7 +525,7 @@
       recomputeUsedFromResult();
 
       renderTable(leftTable,  `Jahrgangsstufe_5`, left.headers, left.rows, setLeftSelection);
-      renderTable(midTable,   `Notfallkontakte`,  mid.headers,  mid.rows,  setMidSelection);
+      renderTable(midTable,   `Notfallkontakte`,              mid.headers,  mid.rows,  setMidSelection);
       renderTable(rightTable, `Allergien`,        right.headers,right.rows,setRightSelection);
       renderResult();
 
